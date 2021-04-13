@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>贝塞尔3曲线-动画-动画路径</title><meta name="renderer" content="webkit">
+<meta name="force-rendering" content="webkit">
+<body>
+    
+    <canvas id="myCanvas" width="800" height="800"></canvas>
+    <script>
+    </script>
+    <script >
+    
+        function handleExecute() {
+    
+            // 起点
+            const p0 = {x: 100, y: 500}
+            // 控制点1
+            const p1 = {x: 200, y: 100}
+            // 控制点2
+            const p2 = {x: 400, y: 80}
+            // 终点
+            const p3 = {x: 700, y: 500}
+            // 子控制点1、2(这里初始化的坐标不重要，先设置成p0的值)
+            const SC1 = {...p0}
+            const SC2 = {...p1}
+            const SC3 = {...p2}
+            // 子贝塞尔曲线上的终点(这里初始化的坐标不重要，先设置成p0的值)
+            let B = {...p3}
+            // 计算出子控制点1的坐标
+            function calSC1(t) {
+                SC1.x = p0.x + (p1.x - p0.x) * t
+                SC1.y = p0.y + (p1.y - p0.y) * t
+            }
+    
+            // 用于计算SC2的坐标
+            function calSC3(t) {
+                SC3.x = p1.x + (p2.x - p1.x) * t
+                SC3.y = p1.y + (p2.y - p1.y) * t
+            }
+    
+            // 计算出子控制点2的坐标
+            function calSC2(t) {
+                SC2.x = SC1.x + (SC3.x - SC1.x) * t
+                SC2.y = SC1.y + (SC3.y - SC1.y) * t
+            }
+    
+            // 计算出子贝塞尔曲线的终点
+            function calB(t) {
+                B.x = Math.pow(1 - t, 3) * p0.x + 3 * t * Math.pow(1 - t, 2) * p1.x + 3 * p2.x * Math.pow(t, 2) * (1 - t) + Math.pow(t, 3) * p3.x
+                B.y = Math.pow(1 - t, 3) * p0.y + 3 * t * Math.pow(1 - t, 2) * p1.y + 3 * p2.y * Math.pow(t, 2) * (1 - t) + Math.pow(t, 3) * p3.y
+            }
+    
+    
+            const canvas = document.querySelector('#myCanvas')
+            const ctx = canvas.getContext('2d')
+    
+            // 设置线条样式
+            ctx.lineWidth = 4
+            ctx.lineCap = 'round'
+            ctx.lineJoin = 'round'
+    
+    
+            // 先画一条完整的贝塞尔曲线以验证贝塞尔曲线动画的准确性
+            ctx.beginPath()
+            ctx.moveTo(p0.x, p0.y)
+            ctx.strokeStyle = '#e3e3e3'
+            ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+            ctx.stroke()
+    
+    
+            /*
+            * 动画帧绘制方法.
+            * currentTime是requestAnimation执行回调方法step时会传入的一个执行时的时间(由performance.now()获得).
+            * */
+           let animation
+           let num = 0;
+            const step = (currentTime) => {
+                num+= 0.01;
+                const draw = () => {
+                    ctx.beginPath()
+                    ctx.moveTo(p0.x, p0.y)
+                    // 计算并更新B和SC1、SC2、SC3的坐标
+                    calB(num)
+                    calSC1(num)
+                    calSC3(num)
+                    calSC2(num)
+                    // 用贝塞尔曲线将刚刚moveTo中的点连接到B上
+                    ctx.bezierCurveTo(SC1.x, SC1.y, SC2.x, SC2.y, B.x, B.y)
+                    ctx.strokeStyle = '#ff0000'
+                    ctx.stroke()
+                }
+                draw()
+                animation = window.requestAnimationFrame(step)
+                if (num >= 1) {
+                  console.log('结束了')   
+                 window.cancelAnimationFrame(animation);
+                } 
+            }
+            step();
+            
+        }
+        handleExecute()
+    </script>
+    </body>
