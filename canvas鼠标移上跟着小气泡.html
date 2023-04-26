@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no" />
+    <title>canvas鼠标移上跟着小气泡</title>
+</head>
+
+<body>
+    <canvas width="1000" height="1000" id="canvas"></canvas>
+    <script type="text/javascript">
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        /* 绑定窗口大小发生改变事件，让canvas随时铺满浏览器可视区 */
+        // window.onresize = resizeCanvas;
+        // function resizeCanvas() {
+        //     canvas.width = window.innerWidth;
+        //     canvas.height = window.innerHeight;
+        // }
+        // resizeCanvas();
+        let arr = [];
+        // 定义方法
+        function Circle(x, y, r) {
+            this.x = x;
+            this.y = y;
+            this.r = r;
+            this.color = `rgb(${255 * Math.random()},${255 * Math.random()},${255 * Math.random()})`
+            this.xZou = parseInt(Math.random() * 10 - 5);
+            this.yZou = parseInt(Math.random() * 10);
+            arr.push(this);
+        }
+        // 绘制
+        Circle.prototype.render = function () {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+        // 更新
+        Circle.prototype.updated = function (x,y,r) {
+            this.x = this.x + this.xZou;
+            this.y = this.y + this.yZou;
+            this.r = this.r - 0.1;
+            if(this.r <= 0) {
+                this.remove()
+            }
+        };
+        // 删除
+        Circle.prototype.remove = function () {
+            arr.forEach((item, index) => {
+                if(this === item) {
+                    arr.splice(index,1)
+                }
+            })
+        }
+        canvas.addEventListener('mousemove', function (e) {
+            new Circle(e.offsetX, e.offsetY, Math.random() * 15);
+        })
+        const step = () => {
+            window.requestAnimationFrame(step);
+            ctx.clearRect(0, 0, 1000, 1000);
+            arr.forEach((item) => {
+                item.render()
+                item.updated()
+            })
+        }
+        step();
+    </script>
+</body>
+
+</html>
